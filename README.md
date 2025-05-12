@@ -15,37 +15,20 @@ You can install the package via composer:
 composer require vmorozov/laravel-http-client-requests-logger
 ```
 
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="laravel-http-client-requests-logger-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="laravel-http-client-requests-logger-config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-http-client-requests-logger-views"
-```
-
 ## Usage
 
+In class that uses laravel http client in constructor:
+
 ```php
-$laravelHttpClientRequestsLogger = new VMorozov\LaravelHttpClientRequestsLogger();
-echo $laravelHttpClientRequestsLogger->echoPhrase('Hello, VMorozov!');
+public function __construct(private ExternalApiRequestsLogger $requestsLogger)
+{
+    $this->requestsLogger->setApiName('some api name');
+}
+```
+
+In class that uses laravel http client in code that sets request options:
+```php
+Http::withMiddleware($this->requestsLogger->createLoggingMiddleware());
 ```
 
 ## Testing
