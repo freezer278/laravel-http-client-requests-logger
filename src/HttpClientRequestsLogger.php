@@ -11,6 +11,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class HttpClientRequestsLogger
 {
+    private const CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
+
     private string $apiName;
 
     public function __construct(
@@ -31,11 +33,13 @@ class HttpClientRequestsLogger
 
                 $requestBodyContents = $this->getRequestBodyAsString($request);
 
+                $requestGetParamsString = $this->getGetParamsString($request);
+
                 Log::debug($this->apiName.' api request start', [
                     'request_id' => $requestId,
                     'request_method' => $request->getMethod(),
-                    'request_url' => (string) $request->getUri(),
-                    'request_get_params_string' => $request->getUri()->getQuery(),
+                    'request_url' => $this->getRequestUrl($request),
+                    'request_get_params_string' => $requestGetParamsString,
                     'request_body_string' => $this->getRequestBodyAsString($request),
                 ]);
 
@@ -48,7 +52,7 @@ class HttpClientRequestsLogger
 
                         Log::debug($this->apiName.' api successful response', [
                             'request_id' => $requestId,
-                            'request_url' => (string) $request->getUri(),
+                            'request_url' => $this->getRequestUrl($request),
                             'response_status_code' => $response->getStatusCode(),
                             'response_body_string' => $responseBodyContents,
                             'request_duration_ms' => $requestDuration,
@@ -59,7 +63,7 @@ class HttpClientRequestsLogger
                     function (Throwable $reason) use ($requestId, $request, $requestBodyContents) {
                         $errorContext = [
                             'request_id' => $requestId,
-                            'request_url' => (string) $request->getUri(),
+                            'request_url' => $this->getRequestUrl($request),
                             'request_body_string' => $requestBodyContents,
                             'error_message' => $reason->getMessage(),
                         ];
@@ -89,6 +93,25 @@ class HttpClientRequestsLogger
     private function generateRequestId(): string
     {
         return Str::uuid()->toString();
+    }
+
+    private function getRequestUrl(RequestInterface $request): string
+    {
+        return $request->getUri()->getPath();
+    }
+
+    private function getGetParamsString(RequestInterface $request): string
+    {
+        $params = [];
+        parse_str($request->getUri()->getQuery(), $params);
+
+        foreach ($params as $key => $param) {
+            if (preg_match(self::CONFIDENTIAL_GET_PARAM_PATTERN, $key)) {
+                $params[$key] = '[REDACTED]';
+            }
+        }
+
+        return json_encode($params);
     }
 
     private function getResponseBodyAsString(ResponseInterface $response): string
