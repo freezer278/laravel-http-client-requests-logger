@@ -2,18 +2,21 @@
 
 namespace VMorozov\LaravelHttpClientRequestsLogger;
 
+use Closure;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use Illuminate\Http\Client\RequestException as LaravelHttpRequestException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
 
 class HttpClientRequestsLogger
 {
     private const CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
 
     private string $apiName;
+    private ?Closure $customResponseBodyProcessor = null;
 
     public function __construct(
         private FormDataBodyParser $formDataBodyParser
@@ -22,6 +25,11 @@ class HttpClientRequestsLogger
     public function setApiName(string $apiName): void
     {
         $this->apiName = $apiName;
+    }
+
+    public function setCustomResponseBodyProcessor(Closure $customResponseBodyProcessor): void
+    {
+        $this->customResponseBodyProcessor = $customResponseBodyProcessor;
     }
 
     public function createLoggingMiddleware(): callable
@@ -121,7 +129,13 @@ class HttpClientRequestsLogger
         // Rewind the stream so it can be read again if needed elsewhere
         $body->rewind();
 
-        return $this->truncateBodySizeToMaxLengthIfNeeded($contents);
+        if ($this->customResponseBodyProcessor) {
+            $contents = $this->customResponseBodyProcessor->__invoke($contents);
+        } else {
+            $contents = $this->truncateBodySizeToMaxLengthIfNeeded($contents);
+        }
+
+        return $contents;
     }
 
     private function getRequestBodyAsString(RequestInterface $request): string
