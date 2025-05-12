@@ -16,6 +16,7 @@ class HttpClientRequestsLogger
     private const CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
 
     private string $apiName;
+
     private ?Closure $customResponseBodyProcessor = null;
 
     public function __construct(
