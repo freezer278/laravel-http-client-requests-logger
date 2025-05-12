@@ -20,7 +20,11 @@ composer require vmorozov/laravel-http-client-requests-logger
 In class that uses laravel http client in constructor:
 
 ```php
-public function __construct(private ExternalApiRequestsLogger $requestsLogger)
+use \VMorozov\LaravelHttpClientRequestsLogger\HttpClientRequestsLogger;
+
+// .....
+
+public function __construct(private HttpClientRequestsLogger $requestsLogger)
 {
     $this->requestsLogger->setApiName('some api name');
 }
