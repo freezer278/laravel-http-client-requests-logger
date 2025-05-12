@@ -105,7 +105,7 @@ class HttpClientRequestsLogger
 
     private function getRequestUrl(RequestInterface $request): string
     {
-        return $request->getUri()->getPath();
+        return urldecode($request->getUri()->getPath());
     }
 
     private function getGetParamsString(RequestInterface $request): string
