@@ -16,7 +16,6 @@ class HttpClientRequestsLogger
     private const CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
 
     private string $apiName;
-
     private ?Closure $customResponseBodyProcessor = null;
 
     public function __construct(
@@ -112,7 +111,7 @@ class HttpClientRequestsLogger
     private function getGetParamsString(RequestInterface $request): string
     {
         $params = [];
-        parse_str($request->getUri()->getQuery(), $params);
+        parse_str(urldecode($request->getUri()->getQuery()), $params);
 
         foreach ($params as $key => $param) {
             if (preg_match(self::CONFIDENTIAL_GET_PARAM_PATTERN, $key)) {
@@ -120,7 +119,7 @@ class HttpClientRequestsLogger
             }
         }
 
-        return json_encode($params);
+        return json_encode($params, JSON_UNESCAPED_UNICODE);
     }
 
     private function getResponseBodyAsString(ResponseInterface $response): string
