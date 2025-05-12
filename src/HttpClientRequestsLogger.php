@@ -15,8 +15,7 @@ class HttpClientRequestsLogger
 
     public function __construct(
         private FormDataBodyParser $formDataBodyParser
-    ) {
-    }
+    ) {}
 
     public function setApiName(string $apiName): void
     {
@@ -32,7 +31,7 @@ class HttpClientRequestsLogger
 
                 $requestBodyContents = $this->getRequestBodyAsString($request);
 
-                Log::debug($this->apiName . ' api request start', [
+                Log::debug($this->apiName.' api request start', [
                     'request_id' => $requestId,
                     'request_method' => $request->getMethod(),
                     'request_url' => (string) $request->getUri(),
@@ -47,7 +46,7 @@ class HttpClientRequestsLogger
                         $requestEndTimestamp = microtime(true);
                         $requestDuration = round(($requestEndTimestamp - $requestStartTimestamp) * 1000);
 
-                        Log::debug($this->apiName . ' api successful response', [
+                        Log::debug($this->apiName.' api successful response', [
                             'request_id' => $requestId,
                             'request_url' => (string) $request->getUri(),
                             'response_status_code' => $response->getStatusCode(),
@@ -78,7 +77,7 @@ class HttpClientRequestsLogger
                             }
                         }
 
-                        Log::error($this->apiName . ' api request failed response', $errorContext);
+                        Log::error($this->apiName.' api request failed response', $errorContext);
 
                         throw $reason;
                     }
@@ -121,7 +120,7 @@ class HttpClientRequestsLogger
     private function truncateBodySizeToMaxLengthIfNeeded(string $bodyString): string
     {
         if (strlen($bodyString) > 1000) {
-            $bodyString = substr($bodyString, 0, 1000) . '...';
+            $bodyString = substr($bodyString, 0, 1000).'...';
         }
 
         return $bodyString;
