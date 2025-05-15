@@ -13,7 +13,7 @@ use Throwable;
 
 class HttpClientRequestsLogger
 {
-    private const CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
+    private const string CONFIDENTIAL_GET_PARAM_PATTERN = '/password|pwd|secret|token|auth|key|session|ssn|credit|cvv|card/i';
 
     private string $apiName;
 
@@ -45,6 +45,7 @@ class HttpClientRequestsLogger
                 $requestGetParamsString = $this->getGetParamsString($request);
 
                 Log::debug($this->apiName.' api request start', [
+                    'api_name' => $this->apiName,
                     'request_id' => $requestId,
                     'request_method' => $request->getMethod(),
                     'request_url' => $this->getRequestUrl($request),
@@ -60,6 +61,7 @@ class HttpClientRequestsLogger
                         $requestDuration = round(($requestEndTimestamp - $requestStartTimestamp) * 1000);
 
                         Log::debug($this->apiName.' api successful response', [
+                            'api_name' => $this->apiName,
                             'request_id' => $requestId,
                             'request_url' => $this->getRequestUrl($request),
                             'response_status_code' => $response->getStatusCode(),
@@ -71,6 +73,7 @@ class HttpClientRequestsLogger
                     },
                     function (Throwable $reason) use ($requestId, $request, $requestBodyContents) {
                         $errorContext = [
+                            'api_name' => $this->apiName,
                             'request_id' => $requestId,
                             'request_url' => $this->getRequestUrl($request),
                             'request_body_string' => $requestBodyContents,
